@@ -25,7 +25,7 @@ http://127.0.0.1:7000
 ```
 
 Odysseus çalışmıyorsa istekler başarısız olacaktır.
-
+https://github.com/pewdiepie-archdaemon/odysseus
 ---
 
 ## Kurulum
