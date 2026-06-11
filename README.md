@@ -1,41 +1,24 @@
-# Chatgbt
+# AI Bot REST API
 
-Odysseus API ile sohbet oturumları oluşturmak, mevcut oturumları kaydetmek ve önceki oturumlarla konuşmaya devam etmek için hazırlanmış basit bir Node.js uygulaması.
+Odysseus tabanlı sohbet sistemine HTTP üzerinden erişim sağlayan basit bir REST API.
 
 ## Özellikler
 
-- Yeni sohbet oturumu oluşturma
-- Son kullanılan oturumu bulma
-- Yeni veya mevcut oturuma mesaj gönderme
-- Streaming (anlık) cevap alma
-- Oturumları JSON dosyasında saklama
-- Sohbet başlıklarını otomatik kaydetme
+- HTTP üzerinden soru gönderme
+- Yeni sohbet oluşturma
+- Mevcut sohbeti kullanma
+- JSON response desteği
+- Postman ile kolay test edebilme
+- Node.js + Express altyapısı
 
----
-
-## Gereksinimler
-
-- Node.js 18+
-- Çalışan bir Odysseus sunucusu
-
-Varsayılan API adresi:
-
-```txt
-http://127.0.0.1:7000
-```
-
-Odysseus çalışmıyorsa istekler başarısız olacaktır.
-https://github.com/pewdiepie-archdaemon/odysseus
 ---
 
 ## Kurulum
 
-Projeyi klonlayın:
+### Gereksinimler
 
-```bash
-git clone <repo-url>
-cd Chatgbt
-```
+- Node.js 18+
+- Çalışan bir Odysseus sunucusu
 
 Bağımlılıkları yükleyin:
 
@@ -43,190 +26,200 @@ Bağımlılıkları yükleyin:
 npm install
 ```
 
-package.json içerisinde aşağıdaki ayarın bulunduğundan emin olun:
+veya
+
+```bash
+npm install express
+```
+
+---
+
+## API'yi Başlatma
+
+```bash
+node restAPI.js
+```
+
+Başarılı şekilde çalıştığında:
+
+```text
+Server running on http://localhost:3000
+```
+
+---
+
+## Base URL
+
+```text
+http://localhost:3000
+```
+
+---
+
+## Endpoints
+
+### GET /
+
+API'nin çalışıp çalışmadığını kontrol eder.
+
+#### Request
+
+```http
+GET /
+```
+
+#### Response
 
 ```json
 {
-  "type": "module"
+  "status": "OK"
 }
 ```
 
 ---
 
-## Proje Yapısı
+### POST /ask
 
-```txt
-Chatgbt/
-│
-├── index.js
-│
-├── session_ids.json
-│
-└── func/
-    ├── createNewSession.js
-    ├── getInput.js
-    ├── getLatestSessionId.js
-    ├── newAskOdysseus.js
-    ├── oldAskOdysseus.js
-    └── saveCurrentSession.js
-```
+Odysseus'a soru gönderir.
+
+#### Request Body
+
+| Alan | Tip | Açıklama |
+|--------|------|----------|
+| mode | string | `new` veya `old` |
+| question | string | Sorulacak soru |
 
 ---
 
-## Fonksiyonlar
+### Yeni Sohbet Oluşturma
 
-### createNewSession()
-
-Yeni bir sohbet oturumu oluşturur.
-
-```js
-const sessionId = await createNewSession();
-```
-
-Dönen değer:
-
-```txt
-d32d83a2-dbc5-4044-8397-d20349e3187e
-```
-
----
-
-### getLatestSessionId()
-
-`session_ids.json` dosyasındaki en son kayıtlı oturumu döndürür.
-
-```js
-const sessionId = await getLatestSessionId();
-```
-
----
-
-### newAskOdysseus()
-
-Yeni oluşturulan oturuma mesaj gönderir.
-
-```js
-await newAskOdysseus(sessionId, "Merhaba");
-```
-
-Cevaplar stream olarak terminale yazdırılır.
-
----
-
-### oldAskOdysseus()
-
-Mevcut bir oturumla konuşmaya devam eder.
-
-```js
-await oldAskOdysseus(sessionId, "Devam edelim");
-```
-
----
-
-### saveCurrentSession()
-
-Oturum bilgisini ve sohbet başlığını kaydeder.
-
-```js
-await saveCurrentSession(sessionId);
-```
-
-Kayıt örneği:
+#### Request
 
 ```json
-[
-  {
-    "index": 1,
-    "session_id": "d32d83a2-dbc5-4044-8397-d20349e3187e",
-    "title": "Starting a Conversation"
-  }
-]
+{
+  "mode": "new",
+  "question": "Merhaba"
+}
+```
+
+#### Response
+
+```json
+{
+  "answer": "Merhaba! Size nasıl yardımcı olabilirim?"
+}
 ```
 
 ---
 
-### getInput()
+### Son Sohbeti Kullanma
 
-Terminalden kullanıcı girişi almak için kullanılır.
+#### Request
 
-```js
-const question = await getInput("Soru: ");
+```json
+{
+  "mode": "old",
+  "question": "Bir önceki konuyu devam ettir"
+}
+```
+
+#### Response
+
+```json
+{
+  "answer": "Önceki konuşmamıza devam edelim..."
+}
 ```
 
 ---
 
-## Kullanım Örneği
+## Postman Kullanımı
 
-```js
-import { getInput } from "./func/getInput.js";
-import { createNewSession } from "./func/createNewSession.js";
-import { newAskOdysseus } from "./func/newAskOdysseus.js";
-import { saveCurrentSession } from "./func/saveCurrentSession.js";
+### Method
 
-const question = await getInput("Soru: ");
-
-const sessionId = await createNewSession();
-
-await newAskOdysseus(sessionId, question);
-
-await saveCurrentSession(sessionId);
+```text
+POST
 ```
 
-Çalıştırmak için:
+### URL
+
+```text
+http://localhost:3000/ask
+```
+
+### Headers
+
+```text
+Content-Type: application/json
+```
+
+### Body
+
+```json
+{
+  "mode": "old",
+  "question": "Merhaba"
+}
+```
+
+---
+
+## cURL Örneği
+
+### Yeni Sohbet
 
 ```bash
-node index.js
+curl -X POST http://localhost:3000/ask \
+-H "Content-Type: application/json" \
+-d "{\"mode\":\"new\",\"question\":\"Merhaba\"}"
+```
+
+### Mevcut Sohbet
+
+```bash
+curl -X POST http://localhost:3000/ask \
+-H "Content-Type: application/json" \
+-d "{\"mode\":\"old\",\"question\":\"Nasılsın?\"}"
 ```
 
 ---
 
-## session_ids.json
+## Response Format
 
-Uygulama kullanılan sohbetleri bu dosyada saklar.
-
-Örnek:
+Başarılı isteklerde:
 
 ```json
-[
-  {
-    "index": 1,
-    "session_id": "12345678-abcd-1234-abcd-1234567890ab",
-    "title": "How to use Docker"
-  },
-  {
-    "index": 2,
-    "session_id": "87654321-dcba-4321-dcba-0987654321ba",
-    "title": "Node.js Session Management"
-  }
-]
+{
+  "answer": "..."
+}
+```
+
+Hatalı isteklerde:
+
+```json
+{
+  "error": "..."
+}
 ```
 
 ---
 
-## API Endpointleri
+## Kullanım Senaryoları
 
-Uygulama aşağıdaki Odysseus endpointlerini kullanır:
-
-### Yeni Session
-
-```http
-POST /api/session
-```
-
-### Session Listesi
-
-```http
-GET /api/sessions
-```
-
-### Chat Stream
-
-```http
-POST /api/chat_stream
-```
+- Web uygulamaları
+- Discord botları
+- Telegram botları
+- Mobil uygulamalar
+- Otomasyon sistemleri
+- AI Agent projeleri
 
 ---
 
-## Lisans
+## Teknolojiler
 
-MIT
+- Node.js
+- Express
+- Fetch API
+- Odysseus API
+
+---
