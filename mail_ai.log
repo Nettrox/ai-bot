@@ -1,0 +1,102 @@
+{
+  "created_at": "2026-06-16T13:34:42.437Z",
+  "type": "top_ai_raw_response",
+  "data": {
+    "session_id": "e4de873a-2f84-4f57-9dab-1ec4ddfc6e0e",
+    "user_command": "irfana mail at aksam ne yicek",
+    "response": "{\"status\":\"ready\",\"send_mode\":\"single\",\"mail_adresi\":\"irfan.baksu@gmail.com\",\"mail_basligi\":\"Akşam ne yiyeceksin?\",\"mail_icerigi\":\"Merhaba İrfan,\\n\\nAkşam ne yiyeceksin?\\n\\nTeşekkürler,\",\"person_name\":\"İrfan\",\"topic_name\":\"Akşam yemeği\",\"search_query\":\"\",\"missing_fields\":[],\"user_message\":\"\"}"
+  }
+}
+
+{
+  "created_at": "2026-06-16T13:36:25.192Z",
+  "type": "top_ai_raw_response",
+  "data": {
+    "session_id": "7f12d205-8873-4b81-908e-f7b76594cb2b",
+    "user_command": "irfana mail at aksam ne yicek",
+    "response": "{\"status\":\"ready\",\"send_mode\":\"single\",\"mail_adresi\":\"irfan.baksu@gmail.com\",\"mail_basligi\":\"Akşam yemeği\",\"mail_icerigi\":\"İrfan, akşam ne yiyeceğiz?\",\"person_name\":\"İrfan\",\"topic_name\":\"akşam yemeği\",\"search_query\":\"\",\"missing_fields\":[],\"user_message\":\"\"}"
+  }
+}
+
+{
+  "created_at": "2026-06-16T13:36:25.207Z",
+  "type": "mail_ai_session_not_found",
+  "data": {
+    "session_id": "ce8573ef-3a9a-4e45-9215-c629c7272cc8",
+    "mail_address": "irfan.baksu@gmail.com",
+    "error": "Mesaj gönderilemedi: 404\n{\"detail\":{\"error\":\"SESSION_NOT_FOUND\",\"message\":\"Session 'ce8573ef-3a9a-4e45-9215-c629c7272cc8' not found\"}}"
+  }
+}
+
+{
+  "created_at": "2026-06-16T13:36:30.078Z",
+  "type": "mail_ai_raw_response",
+  "data": {
+    "session_id": "5f5350ef-6e50-4713-9f8e-978b3477e993",
+    "input": {
+      "status": "ready",
+      "send_mode": "single",
+      "mail_adresi": "irfan.baksu@gmail.com",
+      "mail_basligi": "Akşam yemeği",
+      "mail_icerigi": "İrfan, akşam ne yiyeceğiz?",
+      "person_name": "İrfan",
+      "topic_name": "akşam yemeği",
+      "search_query": "",
+      "missing_fields": [],
+      "user_message": ""
+    },
+    "response": "{\"mail_address\":\"irfan.baksu@gmail.com\",\"mail_subject\":\"Akşam Yemeği\",\"mail_topic\":\"İrfan,\\n\\nAkşam ne yiyeceğiz?\"}"
+  }
+}
+
+{
+  "created_at": "2026-06-16T13:36:31.819Z",
+  "type": "mail_sent",
+  "data": {
+    "session_id": "5f5350ef-6e50-4713-9f8e-978b3477e993",
+    "mail_address": "irfan.baksu@gmail.com",
+    "mail_subject": "Akşam Yemeği"
+  }
+}
+
+{
+  "created_at": "2026-06-16T13:39:21.855Z",
+  "type": "top_ai_raw_response",
+  "data": {
+    "session_id": "8eb6c2f3-175d-4816-b48f-bfeedec8fca0",
+    "user_command": "irfana aksam ne yoyecegii sor",
+    "response": "{\"status\":\"ready\",\"send_mode\":\"single\",\"mail_adresi\":\"irfan.baksu@gmail.com\",\"mail_basligi\":\"Akşam Ne Yiyeceğiz?\",\"mail_icerigi\":\"Merhaba İrfan,\\n\\nAkşam ne yiyeceğiz?\\n\\nTeşekkürler,\",\"person_name\":\"İrfan\",\"topic_name\":\"akşam ne yiyeceği\",\"search_query\":\"\",\"missing_fields\":[],\"user_message\":\"\"}"
+  }
+}
+
+{
+  "created_at": "2026-06-16T13:39:24.302Z",
+  "type": "mail_ai_raw_response",
+  "data": {
+    "session_id": "5f5350ef-6e50-4713-9f8e-978b3477e993",
+    "input": {
+      "status": "ready",
+      "send_mode": "single",
+      "mail_adresi": "irfan.baksu@gmail.com",
+      "mail_basligi": "Akşam Ne Yiyeceğiz?",
+      "mail_icerigi": "Merhaba İrfan,\n\nAkşam ne yiyeceğiz?\n\nTeşekkürler,",
+      "person_name": "İrfan",
+      "topic_name": "akşam ne yiyeceği",
+      "search_query": "",
+      "missing_fields": [],
+      "user_message": ""
+    },
+    "response": "{\"mail_address\":\"irfan.baksu@gmail.com\",\"mail_subject\":\"Akşam Ne Yiyeceğiz?\",\"mail_topic\":\"Merhaba İrfan,\\n\\nAkşam ne yiyeceğiz?\\n\\nTeşekkürler,\"}"
+  }
+}
+
+{
+  "created_at": "2026-06-16T13:39:26.100Z",
+  "type": "mail_sent",
+  "data": {
+    "session_id": "5f5350ef-6e50-4713-9f8e-978b3477e993",
+    "mail_address": "irfan.baksu@gmail.com",
+    "mail_subject": "Akşam Ne Yiyeceğiz?"
+  }
+}
+

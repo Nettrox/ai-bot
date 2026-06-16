@@ -1,50 +1,44 @@
-# Chatgbt
-
-Odysseus API ile sohbet oturumları oluşturmak, mevcut oturumları kaydetmek ve önceki oturumlarla konuşmaya devam etmek için hazırlanmış basit bir Node.js uygulaması.
-
-## Özellikler
-
-- Yeni sohbet oturumu oluşturma
-- Son kullanılan oturumu bulma
-- Yeni veya mevcut oturuma mesaj gönderme
-- Streaming (anlık) cevap alma
-- Oturumları JSON dosyasında saklama
-- Sohbet başlıklarını otomatik kaydetme
-
----
+# AI Mail Bot Kurulumu
 
 ## Gereksinimler
 
-- Node.js 18+
-- Çalışan bir Odysseus sunucusu
+* Node.js (18 veya üzeri önerilir)
+* npm
+* Gmail hesabı
+* Gmail App Password
+* `.env` dosyası
 
-Varsayılan API adresi:
+## Proje Oluşturma
 
-```txt
-http://127.0.0.1:7000
-```
-
-Odysseus çalışmıyorsa istekler başarısız olacaktır.
-https://github.com/pewdiepie-archdaemon/odysseus
-
----
-
-## Kurulum
-
-Projeyi klonlayın:
+Yeni bir Node.js projesi oluşturmak için:
 
 ```bash
-git clone <repo-url>
-cd Chatgbt
+npm init -y
 ```
 
-Bağımlılıkları yükleyin:
+Bu komut proje için gerekli olan `package.json` dosyasını oluşturur.
+
+## Gerekli Paketlerin Kurulumu
+
+Mail gönderimi, ortam değişkenleri ve web araması için:
 
 ```bash
-npm install
+npm install axios cheerio dotenv duck-duck-scrape nodemailer
 ```
 
-package.json içerisinde aşağıdaki ayarın bulunduğundan emin olun:
+### Kurulan Paketler
+
+| Paket             | Açıklama                                             |
+| ----------------- | ---------------------------------------------------- |
+| axios             | Web sayfalarına HTTP isteği atmak için kullanılır.   |
+| cheerio           | HTML içerisinden veri ayıklamak için kullanılır.     |
+| dotenv            | `.env` dosyasındaki değişkenleri uygulamaya yükler.  |
+| duck-duck-scrape  | DuckDuckGo üzerinden arama yapmak için kullanılır.   |
+| nodemailer        | Gmail üzerinden e-posta göndermek için kullanılır.   |
+
+## package.json Ayarı
+
+Proje ES module yapısıyla çalıştığı için `package.json` dosyasına aşağıdaki alan eklenmelidir:
 
 ```json
 {
@@ -52,193 +46,134 @@ package.json içerisinde aşağıdaki ayarın bulunduğundan emin olun:
 }
 ```
 
----
+## .env Dosyası Oluşturma
 
-## Docker
+Proje dizininde `.env` dosyası oluşturun:
 
-`.env` dosyasında değişiklik yaptıktan sonra Docker container'larını yeniden başlatmak için:
-
-```bash
-docker compose down
-docker compose up -d
+```env
+MY_EMAIL=YOUR_GMAIL_ADDRESS
+MAIL_PASS=YOUR_GMAIL_APP_PASSWORD
 ```
 
----
+`MY_EMAIL` alanına mail gönderecek Gmail adresi yazılır.
 
-## Proje Yapısı
+`MAIL_PASS` alanına Gmail hesabı için oluşturulan App Password yazılır.
 
-```txt
-Chatgbt/
-│
-├── index.js
-│
-├── session_ids.json
-│
-└── func/
-    ├── createNewSession.js
-    ├── getInput.js
-    ├── getLatestSessionId.js
-    ├── newAskOdysseus.js
-    ├── oldAskOdysseus.js
-    └── saveCurrentSession.js
-```
+## Prompt Dosyası
 
----
+AI promptları `prompt.json` dosyasında tutulur.
 
-## Fonksiyonlar
-
-### createNewSession()
-
-Yeni bir sohbet oturumu oluşturur.
-
-```js
-const sessionId = await createNewSession();
-```
-
-Dönen değer:
-
-```txt
-d32d83a2-dbc5-4044-8397-d20349e3187e
-```
-
----
-
-### getLatestSessionId()
-
-`session_ids.json` dosyasındaki en son kayıtlı oturumu döndürür.
-
-```js
-const sessionId = await getLatestSessionId();
-```
-
----
-
-### newAskOdysseus()
-
-Yeni oluşturulan oturuma mesaj gönderir.
-
-```js
-await newAskOdysseus(sessionId, "Merhaba");
-```
-
-Cevaplar stream olarak terminale yazdırılır.
-
----
-
-### oldAskOdysseus()
-
-Mevcut bir oturumla konuşmaya devam eder.
-
-```js
-await oldAskOdysseus(sessionId, "Devam edelim");
-```
-
----
-
-### saveCurrentSession()
-
-Oturum bilgisini ve sohbet başlığını kaydeder.
-
-```js
-await saveCurrentSession(sessionId);
-```
-
-Kayıt örneği:
+Dosya içerisinde iki ana alan vardır:
 
 ```json
-[
-  {
-    "index": 1,
-    "session_id": "d32d83a2-dbc5-4044-8397-d20349e3187e",
-    "title": "Starting a Conversation"
-  }
-]
+{
+  "top_ai": {},
+  "mail_ai": {}
+}
 ```
 
----
+| Alan      | Açıklama                                                         |
+| --------- | ---------------------------------------------------------------- |
+| top_ai    | Kullanıcının mail isteğini analiz eder ve gönderim inputu üretir. |
+| mail_ai   | Hazırlanan inputtan gönderilecek nihai maili oluşturur.           |
 
-### getInput()
+## Kişi ve Session Kayıtları
 
-Terminalden kullanıcı girişi almak için kullanılır.
+Kişi, mail adresi ve session bilgileri `top_ai.json` dosyasında tutulur.
 
-```js
-const question = await getInput("Soru: ");
+Örnek yapı:
+
+```json
+{
+  "records": [
+    {
+      "session_id": "",
+      "person_name": "",
+      "mail_adresi": ""
+    }
+  ]
+}
 ```
 
----
+Bu dosyada yalnızca gerekli bilgiler tutulur. Detaylı AI cevapları veya gereksiz log verileri burada saklanmaz.
 
-## Kullanım Örneği
+## Log Dosyası
 
-```js
-import { getInput } from "./func/getInput.js";
-import { createNewSession } from "./func/createNewSession.js";
-import { newAskOdysseus } from "./func/newAskOdysseus.js";
-import { saveCurrentSession } from "./func/saveCurrentSession.js";
+Detaylı çalışma çıktıları `mail_ai.log` dosyasına yazılır.
 
-const question = await getInput("Soru: ");
+Bu dosyada şunlar tutulabilir:
 
-const sessionId = await createNewSession();
+* Top AI cevapları
+* Mail AI cevapları
+* Web arama sonuçları
+* Gönderilen mail bilgileri
+* Geçersiz session durumları
 
-await newAskOdysseus(sessionId, question);
+## Gönderim Modları
 
-await saveCurrentSession(sessionId);
+Uygulama üç farklı gönderim şeklini destekler.
+
+| Mod      | Açıklama                                         |
+| -------- | ------------------------------------------------ |
+| single   | Tek kişiye mail gönderir.                        |
+| separate | Birden fazla kişiye ayrı ayrı mail gönderir.     |
+| together | Birden fazla kişiye tek mail olarak gönderir.    |
+
+Örnek komutlar:
+
+```text
+irfana mail at aksam ne yicek
 ```
 
-Çalıştırmak için:
+```text
+irfana ve aleynaya ayrı ayrı mail at akşam ne yiyeceklerini sor
+```
+
+```text
+irfana ve aleynaya birlikte mail at akşam ne yiyeceklerini sor
+```
+
+Eğer birden fazla kişi belirtilir ama gönderim şekli belirtilmezse uygulama kullanıcıya birlikte mi ayrı ayrı mı gönderileceğini sorar.
+
+## Kullanım
+
+Uygulamayı çalıştırmak için:
 
 ```bash
 node index.js
 ```
 
----
+Çalıştığında terminalde aşağıdaki giriş alanı görünür:
 
-## session_ids.json
-
-Uygulama kullanılan sohbetleri bu dosyada saklar.
-
-Örnek:
-
-```json
-[
-  {
-    "index": 1,
-    "session_id": "12345678-abcd-1234-abcd-1234567890ab",
-    "title": "How to use Docker"
-  },
-  {
-    "index": 2,
-    "session_id": "87654321-dcba-4321-dcba-0987654321ba",
-    "title": "Node.js Session Management"
-  }
-]
+```text
+Mail komutu:
 ```
 
----
+Örnek kullanım:
 
-## API Endpointleri
-
-Uygulama aşağıdaki Odysseus endpointlerini kullanır:
-
-### Yeni Session
-
-```http
-POST /api/session
+```text
+Mail komutu: irfana mail at aksam ne yicek
 ```
 
-### Session Listesi
+Uygulama isteği analiz eder, gerekli mail içeriğini oluşturur ve Gmail üzerinden gönderir.
 
-```http
-GET /api/sessions
-```
+## Proje Dosyaları
 
-### Chat Stream
+| Dosya                  | Açıklama                                      |
+| ---------------------- | --------------------------------------------- |
+| index.js               | Ana uygulama dosyasıdır.                      |
+| prompt.json            | AI promptlarını tutar.                        |
+| top_ai.json            | Kişi, mail adresi ve session kayıtlarını tutar. |
+| mail_ai.log            | Detaylı çalışma loglarını tutar.              |
+| func/sendMail.js       | Mail gönderme işlemini yapar.                 |
+| func/createNewSession.js | Yeni session oluşturma işlemini yapar.       |
+| func/saveTopAiLog.js   | Kişi ve session kayıtlarını günceller.        |
+| func/saveMailAiLog.js  | Detaylı logları dosyaya yazar.                |
 
-```http
-POST /api/chat_stream
-```
+## Notlar
 
----
-
-## Lisans
-
-MIT
+* `session_ids.json` kullanılmamaktadır.
+* `top_ai_search.json` kullanılmamaktadır.
+* Web araması sonucu bulunan kişiler doğrudan `top_ai.json` içine eklenir.
+* Detaylı loglar JSON dosyalarını kirletmemesi için `mail_ai.log` içinde tutulur.
+* `.env` dosyası paylaşılmamalı ve Git'e eklenmemelidir.
