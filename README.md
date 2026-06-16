@@ -26,6 +26,7 @@ http://127.0.0.1:7000
 
 Odysseus çalışmıyorsa istekler başarısız olacaktır.
 https://github.com/pewdiepie-archdaemon/odysseus
+
 ---
 
 ## Kurulum
@@ -49,6 +50,17 @@ package.json içerisinde aşağıdaki ayarın bulunduğundan emin olun:
 {
   "type": "module"
 }
+```
+
+---
+
+## Docker
+
+`.env` dosyasında değişiklik yaptıktan sonra Docker container'larını yeniden başlatmak için:
+
+```bash
+docker compose down
+docker compose up -d
 ```
 
 ---
