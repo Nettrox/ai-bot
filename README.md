@@ -1,244 +1,200 @@
-# Chatgbt
+# AI Project Generator
 
-Odysseus API ile sohbet oturumları oluşturmak, mevcut oturumları kaydetmek ve önceki oturumlarla konuşmaya devam etmek için hazırlanmış basit bir Node.js uygulaması.
+Bu proje, doğal dil ile uygulama fikri vererek otomatik olarak proje oluşturmak ve mevcut projeleri geliştirmek amacıyla geliştirilmiştir.
 
-## Özellikler
+## Temel Mantık
 
-- Yeni sohbet oturumu oluşturma
-- Son kullanılan oturumu bulma
-- Yeni veya mevcut oturuma mesaj gönderme
-- Streaming (anlık) cevap alma
-- Oturumları JSON dosyasında saklama
-- Sohbet başlıklarını otomatik kaydetme
+Sistem Odysseus üzerinden çalışan session tabanlı bir yapı kullanır.
+
+### Yeni Proje
+
+Eğer seçilen klasörde `session_id.txt` bulunmuyorsa:
+
+1. Yeni session oluşturulur.
+2. Kullanıcının isteği prompt ile birleştirilir.
+3. `newAskOdysseus()` çağrılır.
+4. Modelden dönen JSON parse edilir.
+5. Proje dosyaları ve klasörleri oluşturulur.
+6. Session ID proje klasörüne kaydedilir.
+
+Oluşturulan yapı:
+
+```text
+proje-klasoru/
+├── session_id.txt
+├── src/
+├── ...
+```
 
 ---
 
-## Gereksinimler
+### Mevcut Proje Güncelleme
 
-- Node.js 18+
-- Çalışan bir Odysseus sunucusu
+Eğer seçilen klasörde `session_id.txt` bulunuyorsa:
 
-Varsayılan API adresi:
+1. Dosya içerisindeki session ID okunur.
+2. Yeni session oluşturulmaz.
+3. `oldAskOdysseus()` çağrılır.
+4. Önceki sohbet bağlamı korunur.
+5. Kullanıcının yeni isteği mevcut proje üzerinde uygulanır.
 
-```txt
-http://127.0.0.1:7000
+Örnek:
+
+```text
+Dark mode ekle
 ```
 
-Odysseus çalışmıyorsa istekler başarısız olacaktır.
-https://github.com/pewdiepie-archdaemon/odysseus
+```text
+PostgreSQL desteği ekle
+```
+
+```text
+Bu hata neden oluşuyor?
+
+[paste edilen hata logu]
+```
+
+Model önceki konuşmaları bildiği için mevcut proje üzerinden devam eder.
 
 ---
 
-## Kurulum
+## Klasör Seçimi
 
-Projeyi klonlayın:
+Uygulama çalıştırıldığında kullanıcıdan terminal üzerinden yol yazması istenmez.
 
-```bash
-git clone <repo-url>
-cd Chatgbt
+macOS klasör seçim penceresi açılır.
+
+Kullanıcı:
+
+1. Yeni proje oluşturmak istiyorsa boş bir klasör seçebilir.
+2. Var olan projeyi güncellemek istiyorsa proje klasörünü seçebilir.
+
+---
+
+## Session Yönetimi
+
+Her proje kendi session bilgisine sahiptir.
+
+Dosya:
+
+```text
+session_id.txt
 ```
 
-Bağımlılıkları yükleyin:
+Örnek içerik:
 
-```bash
-npm install
+```text
+6735f057-03b4-42b2-9dbc-72128264a90c
 ```
 
-package.json içerisinde aşağıdaki ayarın bulunduğundan emin olun:
+Bu sayede farklı projeler birbirinden bağımsız olarak geliştirilebilir.
+
+Örnek:
+
+```text
+Projects/
+├── ClipboardManager/
+│   └── session_id.txt
+│
+├── ExpenseTracker/
+│   └── session_id.txt
+│
+└── TelegramBot/
+    └── session_id.txt
+```
+
+Her proje kendi sohbet geçmişine sahip olur.
+
+---
+
+## Model Çıktısı
+
+Model yalnızca JSON döndürür.
+
+Örnek:
 
 ```json
 {
-  "type": "module"
+  "action": "create",
+  "project_name": "copy-board",
+  "folders": [
+    "src"
+  ],
+  "files": [
+    {
+      "path": "src/index.js",
+      "content": "..."
+    }
+  ]
 }
 ```
 
 ---
 
-## Docker
+## Desteklenen İşlemler
 
-`.env` dosyasında değişiklik yaptıktan sonra Docker container'larını yeniden başlatmak için:
+### Yeni Proje Oluşturma
 
-```bash
-docker compose down
-docker compose up -d
+```text
+Macbook için clipboard manager yap
+```
+
+```text
+Flutter ile yapılacak bir görev takip uygulaması geliştir
+```
+
+```text
+Python ile REST API oluştur
 ```
 
 ---
 
-## Proje Yapısı
+### Mevcut Projeyi Güncelleme
 
-```txt
-Chatgbt/
-│
-├── index.js
-│
-├── session_ids.json
-│
-└── func/
-    ├── createNewSession.js
-    ├── getInput.js
-    ├── getLatestSessionId.js
-    ├── newAskOdysseus.js
-    ├── oldAskOdysseus.js
-    └── saveCurrentSession.js
+```text
+Dark mode ekle
+```
+
+```text
+SQLite yerine PostgreSQL kullan
+```
+
+```text
+Docker desteği ekle
+```
+
+```text
+Bu hata oluşuyor:
+
+[log]
 ```
 
 ---
 
-## Fonksiyonlar
+## Otomatik Dosya Yönetimi
 
-### createNewSession()
+Modelden gelen JSON'a göre:
 
-Yeni bir sohbet oturumu oluşturur.
+* Yeni klasörler oluşturulur.
+* Yeni dosyalar oluşturulur.
+* Mevcut dosyalar güncellenir.
+* Silinmesi gereken dosyalar kaldırılır.
+* Session bilgisi korunur.
 
-```js
-const sessionId = await createNewSession();
-```
-
-Dönen değer:
-
-```txt
-d32d83a2-dbc5-4044-8397-d20349e3187e
-```
+Tüm işlemler kullanıcı müdahalesi olmadan otomatik gerçekleştirilir.
 
 ---
 
-### getLatestSessionId()
-
-`session_ids.json` dosyasındaki en son kayıtlı oturumu döndürür.
-
-```js
-const sessionId = await getLatestSessionId();
-```
-
----
-
-### newAskOdysseus()
-
-Yeni oluşturulan oturuma mesaj gönderir.
-
-```js
-await newAskOdysseus(sessionId, "Merhaba");
-```
-
-Cevaplar stream olarak terminale yazdırılır.
-
----
-
-### oldAskOdysseus()
-
-Mevcut bir oturumla konuşmaya devam eder.
-
-```js
-await oldAskOdysseus(sessionId, "Devam edelim");
-```
-
----
-
-### saveCurrentSession()
-
-Oturum bilgisini ve sohbet başlığını kaydeder.
-
-```js
-await saveCurrentSession(sessionId);
-```
-
-Kayıt örneği:
-
-```json
-[
-  {
-    "index": 1,
-    "session_id": "d32d83a2-dbc5-4044-8397-d20349e3187e",
-    "title": "Starting a Conversation"
-  }
-]
-```
-
----
-
-### getInput()
-
-Terminalden kullanıcı girişi almak için kullanılır.
-
-```js
-const question = await getInput("Soru: ");
-```
-
----
-
-## Kullanım Örneği
-
-```js
-import { getInput } from "./func/getInput.js";
-import { createNewSession } from "./func/createNewSession.js";
-import { newAskOdysseus } from "./func/newAskOdysseus.js";
-import { saveCurrentSession } from "./func/saveCurrentSession.js";
-
-const question = await getInput("Soru: ");
-
-const sessionId = await createNewSession();
-
-await newAskOdysseus(sessionId, question);
-
-await saveCurrentSession(sessionId);
-```
-
-Çalıştırmak için:
+## Kullanım
 
 ```bash
 node index.js
 ```
 
----
+Çalıştırıldıktan sonra:
 
-## session_ids.json
-
-Uygulama kullanılan sohbetleri bu dosyada saklar.
-
-Örnek:
-
-```json
-[
-  {
-    "index": 1,
-    "session_id": "12345678-abcd-1234-abcd-1234567890ab",
-    "title": "How to use Docker"
-  },
-  {
-    "index": 2,
-    "session_id": "87654321-dcba-4321-dcba-0987654321ba",
-    "title": "Node.js Session Management"
-  }
-]
-```
-
----
-
-## API Endpointleri
-
-Uygulama aşağıdaki Odysseus endpointlerini kullanır:
-
-### Yeni Session
-
-```http
-POST /api/session
-```
-
-### Session Listesi
-
-```http
-GET /api/sessions
-```
-
-### Chat Stream
-
-```http
-POST /api/chat_stream
-```
-
----
-
-## Lisans
-
-MIT
+1. Klasör seçilir.
+2. İstek yazılır.
+3. Model cevap verir.
+4. Dosyalar otomatik oluşturulur veya güncellenir.
+5. Session bilgisi korunarak geliştirme süreci devam eder.
