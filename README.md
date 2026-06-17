@@ -1,155 +1,101 @@
 # AI Project Generator
 
-Bu proje, doğal dil ile uygulama fikri vererek otomatik olarak proje oluşturmak ve mevcut projeleri geliştirmek amacıyla geliştirilmiştir.
+Bu proje, doğal dil ile uygulama geliştirmek, mevcut projeleri güncellemek ve proje geçmişini session bazlı olarak korumak amacıyla geliştirilmiştir.
 
-## Temel Mantık
-
-Sistem Odysseus üzerinden çalışan session tabanlı bir yapı kullanır.
-
-### Yeni Proje
-
-Eğer seçilen klasörde `session_id.txt` bulunmuyorsa:
-
-1. Yeni session oluşturulur.
-2. Kullanıcının isteği prompt ile birleştirilir.
-3. `newAskOdysseus()` çağrılır.
-4. Modelden dönen JSON parse edilir.
-5. Proje dosyaları ve klasörleri oluşturulur.
-6. Session ID proje klasörüne kaydedilir.
-
-Oluşturulan yapı:
-
-```text
-proje-klasoru/
-├── session_id.txt
-├── src/
-├── ...
-```
+Sistem Odysseus üzerinde çalışan session tabanlı bir mimari kullanır.
 
 ---
 
-### Mevcut Proje Güncelleme
+# Temel Özellikler
 
-Eğer seçilen klasörde `session_id.txt` bulunuyorsa:
+* Doğal dil ile proje oluşturma
+* Mevcut projeleri geliştirme
+* Session bazlı proje hafızası
+* Otomatik klasör ve dosya oluşturma
+* Otomatik dosya güncelleme
+* Otomatik dosya silme
+* macOS klasör seçme arayüzü
+* Session bilgisi olmayan mevcut projeleri içeriğinden analiz ederek devralma
 
-1. Dosya içerisindeki session ID okunur.
-2. Yeni session oluşturulmaz.
-3. `oldAskOdysseus()` çağrılır.
-4. Önceki sohbet bağlamı korunur.
-5. Kullanıcının yeni isteği mevcut proje üzerinde uygulanır.
+---
+
+# Çalışma Akışı
+
+Uygulama çalıştırılır:
+
+```bash
+node index.js
+```
+
+macOS klasör seçim penceresi açılır.
+
+Kullanıcı bir klasör seçer.
+
+Sistem seçilen klasörün durumunu kontrol eder.
+
+---
+
+# Senaryo 1 - Yeni Proje
+
+Seçilen klasör:
+
+```text
+MyProjects/
+```
+
+ve klasör boşsa:
+
+```text
+MyProjects/
+```
+
+işlem sırası:
+
+1. Yeni session oluşturulur.
+2. Kullanıcı isteği modele gönderilir.
+3. Model JSON döndürür.
+4. Proje oluşturulur.
+5. Session ID kaydedilir.
 
 Örnek:
 
 ```text
-Dark mode ekle
+MyProjects/
+└── copy-board/
+    ├── session_id.txt
+    ├── Package.swift
+    ├── README.md
+    └── Sources/
 ```
-
-```text
-PostgreSQL desteği ekle
-```
-
-```text
-Bu hata neden oluşuyor?
-
-[paste edilen hata logu]
-```
-
-Model önceki konuşmaları bildiği için mevcut proje üzerinden devam eder.
 
 ---
 
-## Klasör Seçimi
+# Senaryo 2 - Session Bilgisi Bulunan Proje
 
-Uygulama çalıştırıldığında kullanıcıdan terminal üzerinden yol yazması istenmez.
-
-macOS klasör seçim penceresi açılır.
-
-Kullanıcı:
-
-1. Yeni proje oluşturmak istiyorsa boş bir klasör seçebilir.
-2. Var olan projeyi güncellemek istiyorsa proje klasörünü seçebilir.
-
----
-
-## Session Yönetimi
-
-Her proje kendi session bilgisine sahiptir.
-
-Dosya:
+Seçilen klasörde:
 
 ```text
 session_id.txt
 ```
 
-Örnek içerik:
+bulunuyorsa:
 
 ```text
-6735f057-03b4-42b2-9dbc-72128264a90c
+ClipboardManager/
+├── session_id.txt
+├── src/
+└── package.json
 ```
 
-Bu sayede farklı projeler birbirinden bağımsız olarak geliştirilebilir.
+işlem sırası:
 
-Örnek:
+1. Session ID okunur.
+2. Yeni session oluşturulmaz.
+3. oldAskOdysseus() kullanılır.
+4. Mevcut proje bağlamı korunur.
+5. Sadece gerekli değişiklikler uygulanır.
 
-```text
-Projects/
-├── ClipboardManager/
-│   └── session_id.txt
-│
-├── ExpenseTracker/
-│   └── session_id.txt
-│
-└── TelegramBot/
-    └── session_id.txt
-```
-
-Her proje kendi sohbet geçmişine sahip olur.
-
----
-
-## Model Çıktısı
-
-Model yalnızca JSON döndürür.
-
-Örnek:
-
-```json
-{
-  "action": "create",
-  "project_name": "copy-board",
-  "folders": [
-    "src"
-  ],
-  "files": [
-    {
-      "path": "src/index.js",
-      "content": "..."
-    }
-  ]
-}
-```
-
----
-
-## Desteklenen İşlemler
-
-### Yeni Proje Oluşturma
-
-```text
-Macbook için clipboard manager yap
-```
-
-```text
-Flutter ile yapılacak bir görev takip uygulaması geliştir
-```
-
-```text
-Python ile REST API oluştur
-```
-
----
-
-### Mevcut Projeyi Güncelleme
+Örnek istekler:
 
 ```text
 Dark mode ekle
@@ -163,38 +109,221 @@ SQLite yerine PostgreSQL kullan
 Docker desteği ekle
 ```
 
+---
+
+# Senaryo 3 - Session Bilgisi Olmayan Mevcut Proje
+
+Seçilen klasörde proje dosyaları varsa ancak:
+
+```text
+session_id.txt
+```
+
+bulunmuyorsa:
+
+```text
+OldProject/
+├── src/
+├── package.json
+└── README.md
+```
+
+işlem sırası:
+
+1. Klasör taranır.
+2. Dosya içerikleri okunur.
+3. Yeni session oluşturulur.
+4. Mevcut proje bilgileri modele gönderilir.
+5. Model projeyi analiz eder.
+6. Session ID oluşturulur.
+7. session_id.txt dosyası yazılır.
+8. Bundan sonraki tüm işlemler aynı session üzerinden devam eder.
+
+Bu sayede daha önce sistem dışında geliştirilmiş projeler de sonradan sisteme dahil edilebilir.
+
+---
+
+# Otomatik Proje Analizi
+
+Session bilgisi olmayan mevcut projelerde sistem:
+
+* Klasör yapısını okur.
+* Dosya içeriklerini okur.
+* Proje yapısını modele aktarır.
+* Mevcut projeyi yeni proje olarak değerlendirmez.
+* Kullanıcının isteğini mevcut proje üzerine uygular.
+
+Örnek:
+
+```text
+Bu projeye JWT authentication ekle
+```
+
 ```text
 Bu hata oluşuyor:
 
-[log]
+[npm logu]
+```
+
+```text
+Admin paneli ekle
 ```
 
 ---
 
-## Otomatik Dosya Yönetimi
+# Session Yönetimi
+
+Her proje kendi hafızasına sahiptir.
+
+Dosya:
+
+```text
+session_id.txt
+```
+
+Örnek:
+
+```text
+6735f057-03b4-42b2-9dbc-72128264a90c
+```
+
+Bu dosya sayesinde proje geçmişi korunur.
+
+Örnek yapı:
+
+```text
+Projects/
+├── ClipboardManager/
+│   └── session_id.txt
+│
+├── ExpenseTracker/
+│   └── session_id.txt
+│
+└── TelegramBot/
+    └── session_id.txt
+```
+
+Her proje kendi bağımsız sohbet geçmişine sahiptir.
+
+---
+
+# Model Çıktı Formatı
+
+Model yalnızca JSON döndürür.
+
+Örnek:
+
+```json
+{
+  "action": "update",
+  "project_name": "copy-board",
+  "folders": [
+    "src/auth"
+  ],
+  "files": [
+    {
+      "path": "src/auth/auth.js",
+      "content": "..."
+    }
+  ],
+  "delete_files": []
+}
+```
+
+---
+
+# Desteklenen İşlemler
+
+## Yeni Proje Oluşturma
+
+```text
+Macbook için clipboard manager yap
+```
+
+```text
+Flutter ile görev takip uygulaması geliştir
+```
+
+```text
+Python ile REST API oluştur
+```
+
+---
+
+## Özellik Ekleme
+
+```text
+Dark mode ekle
+```
+
+```text
+Google login ekle
+```
+
+```text
+Bildirim sistemi ekle
+```
+
+---
+
+## Refactor
+
+```text
+Projeyi TypeScript'e taşı
+```
+
+```text
+Kod yapısını modüler hale getir
+```
+
+---
+
+## Hata Düzeltme
+
+```text
+Bu hata oluşuyor:
+
+[paste edilen log]
+```
+
+```text
+Uygulama açılırken çöküyor
+```
+
+```text
+Bu endpoint çalışmıyor
+```
+
+---
+
+# Otomatik Dosya Yönetimi
 
 Modelden gelen JSON'a göre:
 
 * Yeni klasörler oluşturulur.
 * Yeni dosyalar oluşturulur.
 * Mevcut dosyalar güncellenir.
-* Silinmesi gereken dosyalar kaldırılır.
+* Gereksiz dosyalar silinir.
 * Session bilgisi korunur.
+* Var olan projeler analiz edilerek sisteme dahil edilir.
 
 Tüm işlemler kullanıcı müdahalesi olmadan otomatik gerçekleştirilir.
 
 ---
 
-## Kullanım
+# Kullanım
 
 ```bash
 node index.js
 ```
 
-Çalıştırıldıktan sonra:
+İşlem sırası:
 
 1. Klasör seçilir.
 2. İstek yazılır.
-3. Model cevap verir.
-4. Dosyalar otomatik oluşturulur veya güncellenir.
-5. Session bilgisi korunarak geliştirme süreci devam eder.
+3. Sistem proje durumunu analiz eder.
+4. Gerekirse proje taranır.
+5. Model çalıştırılır.
+6. Dosyalar oluşturulur veya güncellenir.
+7. Session bilgisi korunur.
+8. Geliştirme süreci aynı proje hafızası üzerinden devam eder.
