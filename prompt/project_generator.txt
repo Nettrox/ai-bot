@@ -27,15 +27,32 @@ Kurallar:
 - Oluşturulması gereken yeni klasörler varsa folders alanına yaz.
 - Değişmeyecek dosyaları tekrar yazma.
 
+Mevcut proje analizi:
+
+Eğer sana mevcut proje dosya içerikleri gönderilirse, bunu yeni proje isteği olarak değerlendirme.
+
+Bu durumda:
+- action değeri "update" olmalı.
+- project_name mevcut proje adı olmalı.
+- Kullanıcının isteğine göre sadece değişmesi gereken dosyaları files alanına yaz.
+- Değişmeyen dosyaları tekrar yazma.
+- Gerekirse yeni klasörleri folders alanına ekle.
+- Gerekirse silinecek dosyaları delete_files alanına ekle.
+- Mevcut dosya içeriklerini dikkate alarak değişiklik yap.
+
 Çıktı formatı kesinlikle şu JSON yapısında olacak:
 
 {
   "action": "create",
   "project_name": "proje-adi",
   "description": "kisa-aciklama",
-  "commands": [
-    "kurulum-komutu",
-    "calistirma-komutu"
+  "install_commands": [
+    "npm install",
+    "pip install -r requirements.txt"
+  ],
+  "run_commands": [
+    "npm start",
+    "python main.py"
   ],
   "folders": [
     "src",
@@ -45,14 +62,19 @@ Kurallar:
     {
       "path": "package.json",
       "content": "dosya içeriği"
-    },
-    {
-      "path": "src/index.js",
-      "content": "dosya içeriği"
     }
   ],
   "delete_files": []
 }
+
+Komut kuralları:
+
+- install_commands alanına sadece proje hazırlandıktan sonra otomatik çalıştırılması gereken kurulum komutlarını yaz.
+- npm install, pip install -r requirements.txt, composer install, cargo build gibi kurulum/hazırlık komutları install_commands içinde olmalı.
+- run_commands alanına uygulamayı çalıştırmak için kullanıcıya gösterilecek komutları yaz.
+- run_commands otomatik çalıştırılmayacak.
+- Sisteme zarar verebilecek komutlar yazma.
+- sudo, rm -rf, del, format, chmod -R 777 gibi riskli komutlar üretme.
 
 Dikkat:
 

@@ -1,13 +1,66 @@
 import fs from "fs/promises";
 import path from "path";
 import { execFile } from "child_process";
+import { spawn } from "child_process";
 import { promisify } from "util";
-
 import { createNewSession } from "./func/createNewSession.js";
 import { getInput } from "./func/getInput.js";
 import { saveCurrentSession } from "./func/saveCurrentSession.js";
 import { newAskOdysseus } from "./func/newAskOdysseus.js";
 import { oldAskOdysseus } from "./func/oldAskOdysseus.js";
+
+const BLOCKED_COMMANDS = [
+  "sudo",
+  "rm -rf",
+  "del ",
+  "format",
+  "chmod -R 777",
+  "mkfs",
+  "shutdown",
+  "reboot"
+];
+
+function isSafeCommand(command) {
+  const normalized = command.toLowerCase();
+
+  return !BLOCKED_COMMANDS.some((blocked) =>
+    normalized.includes(blocked.toLowerCase())
+  );
+}
+
+function runCommand(command, cwd) {
+  return new Promise((resolve, reject) => {
+    if (!isSafeCommand(command)) {
+      return reject(new Error(`Güvensiz komut engellendi: ${command}`));
+    }
+
+    console.log(`\nÇalıştırılıyor: ${command}`);
+
+    const child = spawn(command, {
+      cwd,
+      shell: true,
+      stdio: "inherit"
+    });
+
+    child.on("error", reject);
+
+    child.on("close", (code) => {
+      if (code !== 0) {
+        return reject(
+          new Error(`Komut hata kodu ile bitti (${code}): ${command}`)
+        );
+      }
+
+      resolve();
+    });
+  });
+}
+
+async function runInstallCommands(commands, projectPath) {
+  for (const command of commands || []) {
+    await runCommand(command, projectPath);
+  }
+}
 
 const execFileAsync = promisify(execFile);
 
@@ -303,12 +356,19 @@ ${userRequest}
   );
   console.log("=================================");
 
-  if (projectData.commands?.length) {
-    console.log("\nKomutlar:");
-    for (const command of projectData.commands) {
-      console.log("-", command);
+  if (projectData.run_commands?.length) {
+        console.log("\nCalistirma komutlari:");
+        for (const command of projectData.run_commands) {
+            console.log("-", command);
+        }
     }
-  }
+  if (projectData.install_commands?.length) {
+    console.log("\n=================================");
+    console.log("KURULUM KOMUTLARI CALISTIRILIYOR");
+    console.log("=================================");
+
+    await runInstallCommands(projectData.install_commands, projectPath);
+    }
 } catch (err) {
   console.error("HATA:", err.message);
 }
