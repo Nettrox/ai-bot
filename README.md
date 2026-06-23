@@ -1,339 +1,244 @@
-# AI Bot Project
+# Chatgbt
 
-## Overview
+Odysseus API ile sohbet oturumları oluşturmak, mevcut oturumları kaydetmek ve önceki oturumlarla konuşmaya devam etmek için hazırlanmış basit bir Node.js uygulaması.
 
-AI Bot Project is a Node.js-based AI development assistant that can:
+## Özellikler
 
-* Generate complete software projects from natural language descriptions.
-* Maintain project context through persistent sessions.
-* Continue working on previously created projects.
-* Automatically reconstruct project sessions from existing source code.
-* Apply AI-generated file modifications directly to disk.
-* Automatically execute required terminal commands when project dependencies are missing.
-* Track and manage multiple project sessions.
-
----
-
-# Features
-
-## 1. New Project Creation
-
-When a user enters a new application idea:
-
-* A new AI session is created.
-* The session ID is stored.
-* The AI generates the complete project structure.
-* Required files and folders are created automatically.
-* File contents are written automatically.
-
-Example:
-
-User:
-
-Create a clipboard manager application for macOS.
-
-Output:
-
-* Project structure
-* Source files
-* Configuration files
-* Dependency definitions
+- Yeni sohbet oturumu oluşturma
+- Son kullanılan oturumu bulma
+- Yeni veya mevcut oturuma mesaj gönderme
+- Streaming (anlık) cevap alma
+- Oturumları JSON dosyasında saklama
+- Sohbet başlıklarını otomatik kaydetme
 
 ---
 
-## 2. Existing Project Continuation
+## Gereksinimler
 
-If a project already contains a valid `session_id.txt` file:
+- Node.js 18+
+- Çalışan bir Odysseus sunucusu
 
-* The stored session ID is loaded.
-* The AI continues the previous conversation.
-* Existing project context is preserved.
-* Incremental development becomes possible.
+Varsayılan API adresi:
 
-This prevents context loss between development sessions.
-
----
-
-## 3. Automatic Session Recovery
-
-Some older projects may not contain a `session_id.txt` file.
-
-When:
-
-* A project folder is selected.
-* `session_id.txt` does not exist.
-
-The system automatically:
-
-1. Scans the entire project structure.
-2. Reads important source files.
-3. Generates a project summary.
-4. Creates a new AI session.
-5. Sends the reconstructed project context to the AI.
-6. Stores the newly created session ID inside `session_id.txt`.
-
-This allows older projects to be edited without manually recreating context.
-
----
-
-## 4. Session Management
-
-All sessions are stored inside:
-
-```text
-session_ids.json
+```txt
+http://127.0.0.1:7000
 ```
 
-Structure:
+Odysseus çalışmıyorsa istekler başarısız olacaktır.
+https://github.com/pewdiepie-archdaemon/odysseus
+
+---
+
+## Kurulum
+
+Projeyi klonlayın:
+
+```bash
+git clone <repo-url>
+cd Chatgbt
+```
+
+Bağımlılıkları yükleyin:
+
+```bash
+npm install
+```
+
+package.json içerisinde aşağıdaki ayarın bulunduğundan emin olun:
+
+```json
+{
+  "type": "module"
+}
+```
+
+---
+
+## Docker
+
+`.env` dosyasında değişiklik yaptıktan sonra Docker container'larını yeniden başlatmak için:
+
+```bash
+docker compose down
+docker compose up -d
+```
+
+---
+
+## Proje Yapısı
+
+```txt
+Chatgbt/
+│
+├── index.js
+│
+├── session_ids.json
+│
+└── func/
+    ├── createNewSession.js
+    ├── getInput.js
+    ├── getLatestSessionId.js
+    ├── newAskOdysseus.js
+    ├── oldAskOdysseus.js
+    └── saveCurrentSession.js
+```
+
+---
+
+## Fonksiyonlar
+
+### createNewSession()
+
+Yeni bir sohbet oturumu oluşturur.
+
+```js
+const sessionId = await createNewSession();
+```
+
+Dönen değer:
+
+```txt
+d32d83a2-dbc5-4044-8397-d20349e3187e
+```
+
+---
+
+### getLatestSessionId()
+
+`session_ids.json` dosyasındaki en son kayıtlı oturumu döndürür.
+
+```js
+const sessionId = await getLatestSessionId();
+```
+
+---
+
+### newAskOdysseus()
+
+Yeni oluşturulan oturuma mesaj gönderir.
+
+```js
+await newAskOdysseus(sessionId, "Merhaba");
+```
+
+Cevaplar stream olarak terminale yazdırılır.
+
+---
+
+### oldAskOdysseus()
+
+Mevcut bir oturumla konuşmaya devam eder.
+
+```js
+await oldAskOdysseus(sessionId, "Devam edelim");
+```
+
+---
+
+### saveCurrentSession()
+
+Oturum bilgisini ve sohbet başlığını kaydeder.
+
+```js
+await saveCurrentSession(sessionId);
+```
+
+Kayıt örneği:
 
 ```json
 [
   {
     "index": 1,
-    "session_id": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-    "title": "Clipboard Manager"
+    "session_id": "d32d83a2-dbc5-4044-8397-d20349e3187e",
+    "title": "Starting a Conversation"
   }
 ]
 ```
 
-Stored data:
-
-* Session index
-* Session ID
-* Session title
-
-Benefits:
-
-* Session history
-* Project tracking
-* Easy session recovery
-
 ---
 
-## 5. Persistent Project Context
+### getInput()
 
-Each project folder contains:
+Terminalden kullanıcı girişi almak için kullanılır.
 
-```text
-session_id.txt
+```js
+const question = await getInput("Soru: ");
 ```
 
-Example:
+---
 
-```text
-b36f4fe1-4659-4e36-baa5-8745a73fe3c1
+## Kullanım Örneği
+
+```js
+import { getInput } from "./func/getInput.js";
+import { createNewSession } from "./func/createNewSession.js";
+import { newAskOdysseus } from "./func/newAskOdysseus.js";
+import { saveCurrentSession } from "./func/saveCurrentSession.js";
+
+const question = await getInput("Soru: ");
+
+const sessionId = await createNewSession();
+
+await newAskOdysseus(sessionId, question);
+
+await saveCurrentSession(sessionId);
 ```
 
-Purpose:
-
-* Connect project folder to AI conversation.
-* Continue development without losing context.
-* Maintain project memory across executions.
-
----
-
-## 6. Automatic File Generation
-
-The AI returns structured file definitions.
-
-The system automatically:
-
-* Creates folders.
-* Creates files.
-* Writes file contents.
-* Updates existing files.
-
-Supported file types include:
-
-* JS
-* TS
-* JSON
-* HTML
-* CSS
-* Python
-* Markdown
-* YAML
-* Swift
-* Dart
-* C/C++
-* And more
-
----
-
-## 7. Automatic File Editing
-
-When modifications are requested:
-
-* Existing files are loaded.
-* AI analyzes the current implementation.
-* Only required changes are applied.
-* Unrelated code remains untouched.
-
-This enables iterative development workflows.
-
----
-
-## 8. Automatic Dependency Installation
-
-The AI can detect when dependencies are required.
-
-Examples:
+Çalıştırmak için:
 
 ```bash
-npm install express
-```
-
-```bash
-npm install axios
-```
-
-```bash
-pip install requests
-```
-
-```bash
-pip install beautifulsoup4
-```
-
-```bash
-brew install ffmpeg
-```
-
-The system:
-
-1. Extracts required commands from the AI response.
-2. Executes them automatically.
-3. Waits for completion.
-4. Continues project generation.
-
-Benefits:
-
-* Zero manual dependency installation.
-* Faster project setup.
-* Reduced user intervention.
-
----
-
-## 9. Intelligent Project Reconstruction
-
-When rebuilding context from an existing project:
-
-The scanner analyzes:
-
-* Folder structure
-* Source files
-* Package definitions
-* Configuration files
-* Documentation
-
-Examples:
-
-```text
-package.json
-requirements.txt
-README.md
-Dockerfile
-```
-
-The generated summary is sent to the AI before editing begins.
-
-This enables accurate continuation of legacy projects.
-
----
-
-## 10. AI Session Workflow
-
-### New Project
-
-```text
-User Idea
-    ↓
-Create Session
-    ↓
-Generate Project
-    ↓
-Create Files
-    ↓
-Save Session
-```
-
-### Existing Project
-
-```text
-Select Folder
-    ↓
-Read session_id.txt
-    ↓
-Continue Existing Session
-    ↓
-Apply Changes
-```
-
-### Legacy Project
-
-```text
-Select Folder
-    ↓
-No session_id.txt Found
-    ↓
-Scan Project
-    ↓
-Generate Summary
-    ↓
-Create New Session
-    ↓
-Store session_id.txt
-    ↓
-Continue Development
+node index.js
 ```
 
 ---
 
-# Project Goals
+## session_ids.json
 
-* AI-assisted software development
-* Persistent project memory
-* Legacy project recovery
-* Automatic dependency installation
-* Automated file generation
-* Automated file editing
-* Multi-project support
-* Minimal manual intervention
+Uygulama kullanılan sohbetleri bu dosyada saklar.
 
----
+Örnek:
 
-# Future Improvements
-
-Potential future enhancements:
-
-* Git integration
-* Automatic commits
-* Rollback support
-* Dependency update management
-* Docker integration
-* Multi-agent workflows
-* Project testing automation
-* CI/CD generation
-* IDE plugins
+```json
+[
+  {
+    "index": 1,
+    "session_id": "12345678-abcd-1234-abcd-1234567890ab",
+    "title": "How to use Docker"
+  },
+  {
+    "index": 2,
+    "session_id": "87654321-dcba-4321-dcba-0987654321ba",
+    "title": "Node.js Session Management"
+  }
+]
+```
 
 ---
 
-# Requirements
+## API Endpointleri
 
-* Node.js
-* Odysseus API
-* File system access
-* Terminal access
+Uygulama aşağıdaki Odysseus endpointlerini kullanır:
 
-Optional:
+### Yeni Session
 
-* Docker
-* Git
-* Python
-* Homebrew (macOS)
+```http
+POST /api/session
+```
+
+### Session Listesi
+
+```http
+GET /api/sessions
+```
+
+### Chat Stream
+
+```http
+POST /api/chat_stream
+```
 
 ---
 
-# License
+## Lisans
 
-Private Project
+MIT
