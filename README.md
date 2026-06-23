@@ -1,141 +1,232 @@
-# AI Project Agent
+# Chatgbt
 
-Odysseus API uzerinden calisan yerel bir proje olusturma ve guncelleme CLI araci.
+Odysseus API ile sohbet oturumları oluşturmak, mevcut oturumları kaydetmek ve önceki oturumlarla konuşmaya devam etmek için hazırlanmış basit bir Node.js uygulaması.
 
-Bu arac bir klasor secer, kullanicidan istek alir, mevcut projeyi modele baglam olarak gonderir ve modelden gelen JSON plana gore dosya olusturur, hedefli patch uygular, siler ve gerekirse kurulum komutlarini calistirir.
+## Özellikler
+
+- Yeni sohbet oturumu oluşturma
+- Son kullanılan oturumu bulma
+- Yeni veya mevcut oturuma mesaj gönderme
+- Streaming (anlık) cevap alma
+- Oturumları JSON dosyasında saklama
+- Sohbet başlıklarını otomatik kaydetme
+
+---
 
 ## Gereksinimler
 
 - Node.js 18+
-- Calisan Odysseus sunucusu
+- Çalışan bir Odysseus sunucusu
 
-Varsayilan API adresi:
+Varsayılan API adresi:
 
 ```txt
 http://127.0.0.1:7000
 ```
 
-Ortam degiskenleri:
+Odysseus çalışmıyorsa istekler başarısız olacaktır.
+https://github.com/pewdiepie-archdaemon/odysseus
+---
+
+## Kurulum
+
+Projeyi klonlayın:
 
 ```bash
-ODYSSEUS_BASE_URL=http://127.0.0.1:7000
-ODYSSEUS_MODEL=gpt-5.5
-ODYSSEUS_ENDPOINT_URL=https://chatgpt.com/backend-api/codex/responses
+git clone <repo-url>
+cd Chatgbt
 ```
 
-## Kullanım
-
-Etkilesimli kullanim:
+Bağımlılıkları yükleyin:
 
 ```bash
-npm start
+npm install
 ```
 
-Klasoru ve istegi komut satirindan vermek:
+package.json içerisinde aşağıdaki ayarın bulunduğundan emin olun:
 
-```bash
-node index.js --folder /path/to/project --request "Login sayfasina validasyon ekle"
+```json
+{
+  "type": "module"
+}
 ```
 
-On izleme:
-
-```bash
-node index.js --dry-run --folder /path/to/project --request "Dashboard tasarimini duzenle"
-```
-
-Son dry-run planini uygulama:
-
-```bash
-node index.js --apply-dry-run --folder /path/to/project
-```
-
-Son backup'a geri donme:
-
-```bash
-npm run rollback -- --folder /path/to/project
-```
+---
 
 ## Proje Yapısı
 
 ```txt
-.
+Chatgbt/
+│
 ├── index.js
-├── rollback.js
-├── package.json
-├── prompt/
-│   └── project_generator.txt
-├── src/
-│   ├── cli.js
-│   ├── commandRunner.js
-│   ├── config.js
-│   ├── dryRun.js
-│   ├── input.js
-│   ├── logger.js
-│   ├── odysseusClient.js
-│   ├── projectApplier.js
-│   ├── projectPlan.js
-│   ├── projectScanner.js
-│   ├── promptBuilder.js
-│   ├── sessionStore.js
-│   └── utils.js
+│
+├── session_ids.json
+│
+└── func/
+    ├── createNewSession.js
+    ├── getInput.js
+    ├── getLatestSessionId.js
+    ├── newAskOdysseus.js
+    ├── oldAskOdysseus.js
+    └── saveCurrentSession.js
 ```
 
-## Akış
+---
 
-1. Proje klasoru secilir.
-2. Klasorde `.session_id.txt` varsa onceki Odysseus session'i kullanilir.
-3. Session yoksa yeni session olusturulur.
-4. Klasor doluysa proje mevcut kabul edilir ve dosyalar/snapshot modele baglam olarak gonderilir.
-5. Modelden yalnizca gecerli JSON beklenir.
-6. JSON dogrulanir.
-7. Mevcut projede degisiklik yapilacaksa once `.backup` altina yedek alinir.
-8. Yeni dosyalar yazilir, mevcut dosyalara `patches` ile hedefli degisiklik uygulanir.
-9. `.context/project_snapshot.json` guncellenir.
-10. Loglar `.logs` altina yazilir.
+## Fonksiyonlar
 
-## Model JSON Sözleşmesi
+### createNewSession()
 
-Modelin yaniti su formata uymalidir:
+Yeni bir sohbet oturumu oluşturur.
+
+```js
+const sessionId = await createNewSession();
+```
+
+Dönen değer:
+
+```txt
+d32d83a2-dbc5-4044-8397-d20349e3187e
+```
+
+---
+
+### getLatestSessionId()
+
+`session_ids.json` dosyasındaki en son kayıtlı oturumu döndürür.
+
+```js
+const sessionId = await getLatestSessionId();
+```
+
+---
+
+### newAskOdysseus()
+
+Yeni oluşturulan oturuma mesaj gönderir.
+
+```js
+await newAskOdysseus(sessionId, "Merhaba");
+```
+
+Cevaplar stream olarak terminale yazdırılır.
+
+---
+
+### oldAskOdysseus()
+
+Mevcut bir oturumla konuşmaya devam eder.
+
+```js
+await oldAskOdysseus(sessionId, "Devam edelim");
+```
+
+---
+
+### saveCurrentSession()
+
+Oturum bilgisini ve sohbet başlığını kaydeder.
+
+```js
+await saveCurrentSession(sessionId);
+```
+
+Kayıt örneği:
 
 ```json
-{
-  "action": "update",
-  "project_name": "proje-adi",
-  "description": "kisa-aciklama",
-  "install_commands": [],
-  "run_commands": [],
-  "folders": [],
-  "files": [
-    {
-      "path": "src/main.js",
-      "content": "console.log('hello');\n"
-    }
-  ],
-  "patches": [
-    {
-      "path": "src/existing.js",
-      "search": "const oldValue = true;\n",
-      "replace": "const oldValue = false;\n"
-    }
-  ],
-  "delete_files": []
-}
+[
+  {
+    "index": 1,
+    "session_id": "d32d83a2-dbc5-4044-8397-d20349e3187e",
+    "title": "Starting a Conversation"
+  }
+]
 ```
 
-Bu sozlesmenin ayrintilari [prompt/project_generator.txt](prompt/project_generator.txt) icindedir.
+---
 
-## Güvenlik Notları
+### getInput()
 
-- `.env`, `.session_id.txt`, lock dosyalari, `.git`, `node_modules`, `.backup`, `.logs`, `.context`, `.dry-run`, `dist` ve `build` korunur.
-- `sudo`, `rm -rf`, `format`, `shutdown` gibi riskli komutlar engellenir.
-- Yine de modelden gelen komutlar shell ile calistirilir. Bu arac guvenilen yerel projelerde kullanilmalidir.
-- `rollback.js`, secilen proje klasorunu son backup ile degistirir. Kullanmadan once dogru klasoru sectiginden emin ol.
+Terminalden kullanıcı girişi almak için kullanılır.
 
-## Komutlar
+```js
+const question = await getInput("Soru: ");
+```
+
+---
+
+## Kullanım Örneği
+
+```js
+import { getInput } from "./func/getInput.js";
+import { createNewSession } from "./func/createNewSession.js";
+import { newAskOdysseus } from "./func/newAskOdysseus.js";
+import { saveCurrentSession } from "./func/saveCurrentSession.js";
+
+const question = await getInput("Soru: ");
+
+const sessionId = await createNewSession();
+
+await newAskOdysseus(sessionId, question);
+
+await saveCurrentSession(sessionId);
+```
+
+Çalıştırmak için:
 
 ```bash
-npm run check
-npm run dry-run -- --folder /path/to/project --request "..."
-npm run apply -- --folder /path/to/project
-npm run rollback -- --folder /path/to/project
+node index.js
 ```
+
+---
+
+## session_ids.json
+
+Uygulama kullanılan sohbetleri bu dosyada saklar.
+
+Örnek:
+
+```json
+[
+  {
+    "index": 1,
+    "session_id": "12345678-abcd-1234-abcd-1234567890ab",
+    "title": "How to use Docker"
+  },
+  {
+    "index": 2,
+    "session_id": "87654321-dcba-4321-dcba-0987654321ba",
+    "title": "Node.js Session Management"
+  }
+]
+```
+
+---
+
+## API Endpointleri
+
+Uygulama aşağıdaki Odysseus endpointlerini kullanır:
+
+### Yeni Session
+
+```http
+POST /api/session
+```
+
+### Session Listesi
+
+```http
+GET /api/sessions
+```
+
+### Chat Stream
+
+```http
+POST /api/chat_stream
+```
+
+---
+
+## Lisans
+
+MIT
