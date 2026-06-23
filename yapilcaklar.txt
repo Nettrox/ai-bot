@@ -1,7 +1,0 @@
-1. Rollback
-2. Dry Run
-3. Git entegrasyonu
-4. Context cache
-
-node index.js --dry-run
-DRY_RUN=true node index.js
